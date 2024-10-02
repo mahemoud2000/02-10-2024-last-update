@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <title>تسجيل الدخول</title>
+    <!-- تحميل Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+</head>
+<body>
+    <form id="loginForm">
+        <h2>تسجيل الدخول</h2>
+        <label for="loginName">اسم:</label>
+        <input type="text" id="loginName" required>
+        <br>
+        <label for="loginPassword">كلمة السر:</label>
+        <input type="password" id="loginPassword" required>
+        <br>
+        <button type="submit">تسجيل الدخول</button>
+    </form>
+
+    <p id="supportMessage" style="display:none;">
+        كلمة السر خاطئة. إذا فقدت كلمة السر يمكنك إرسال رسالة الدعم من أسفل الشاشة على مدار 24 ساعة، لا تقلق.
+    </p>
+
+    <div id="loginMessage" style="color: red; display: none;"></div>
+
+    <script>
+        // إعداد Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyCPpTAJDRfFuDkq2TGCVIU_LnmYRBXTnSc",
+            authDomain: "new-protfolio.firebaseapp.com",
+            databaseURL: "https://new-protfolio-default-rtdb.firebaseio.com",
+            projectId: "new-protfolio",
+            storageBucket: "new-protfolio.appspot.com",
+            messagingSenderId: "90141039664",
+            appId: "1:90141039664:web:44d13d2f3b943f510aa1f5"
+        };
+
+        // تهيئة Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // نموذج تسجيل الدخول
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const loginName = document.getElementById('loginName').value;
+            const loginPassword = document.getElementById('loginPassword').value;
+
+            // البحث عن بيانات المستخدم في قاعدة البيانات
+            database.ref('owners/').orderByChild('name').equalTo(loginName).once('value')
+                .then(snapshot => {
+                    if (snapshot.exists()) {
+                        const userData = snapshot.val();
+                        const userKey = Object.keys(userData)[0]; // الحصول على مفتاح المستخدم
+                        const user = userData[userKey];
+
+                        // التحقق من كلمة السر
+                        if (user.pass === loginPassword) {
+                            alert('تم تسجيل الدخول بنجاح!');
+                            // يمكنك إضافة تحويل المستخدم إلى الصفحة الرئيسية هنا
+                            window.location.href = 'html/home.html';
+                        } else {
+                            document.getElementById('loginMessage').innerText = 'كلمة السر خاطئة.';
+                            document.getElementById('loginMessage').style.display = 'block';
+                        }
+                    } else {
+                        document.getElementById('loginMessage').innerText = 'المستخدم غير موجود.';
+                        document.getElementById('loginMessage').style.display = 'block';
+                    }
+                })
+                .catch(error => {
+                    console.error('حدث خطأ أثناء البحث: ', error);
+                });
+        });
+    </script>
+</body>
+</html>
